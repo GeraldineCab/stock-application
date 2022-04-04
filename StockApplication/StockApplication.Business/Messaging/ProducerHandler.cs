@@ -2,11 +2,12 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Confluent.Kafka;
+using StockApplication.Business.Messaging.Interfaces;
 using StockApplication.Common.Messages;
 
 namespace StockApplication.Business.Messaging
 {
-    public class ProducerHandler
+    public class ProducerHandler : IProducerHandler
     {
         public async Task ProduceMessageAsync(string stockCode, CancellationToken cancellationToken)
         {

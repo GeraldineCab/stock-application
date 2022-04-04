@@ -35,7 +35,7 @@ namespace StockApplication.Business.Messaging
                     {
                         var cr = c.Consume(cancellationToken);
                         Console.WriteLine($"Consumed message '{cr.Message.Value}' at: '{cr.TopicPartitionOffset}'.");
-                        return await _stockService.GetStockClosePriceAsync(cr.Message.Value, cancellationToken); ;
+                        return await _stockService.GetStockClosePriceAsync(cr.Message.Value, commandNeeded: true, cancellationToken: cancellationToken);
                     }
                     catch (ConsumeException e)
                     {

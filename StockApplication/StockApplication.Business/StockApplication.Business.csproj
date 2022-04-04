@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+	  <PackageReference Include="Confluent.Kafka" />
+	  <PackageReference Include="CsvHelper" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\StockApplication.Common\StockApplication.Common.csproj" />
+    <ProjectReference Include="..\StockApplication.Dto\StockApplication.Dto.csproj" />
+  </ItemGroup>
+
+</Project>

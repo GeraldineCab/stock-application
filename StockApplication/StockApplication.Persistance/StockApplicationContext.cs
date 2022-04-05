@@ -1,24 +1,30 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Configuration;
 using StockApplication.Persistence.Entities;
 
 namespace StockApplication.Persistence
 {
-    public class StockApplicationContext : DbContext, IStockApplicationContext
+    public class StockApplicationContext : IdentityDbContext<User, IdentityRole, string>, IStockApplicationContext
     {
-        public DbSet<User> Users { get; set; }
+        private readonly IConfiguration _configuration;
+        public StockApplicationContext(IConfiguration configuration)
+        {
+            _configuration = configuration;
+        }
+        
         public DbSet<Message> Messages { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseSqlServer("Data Source= (localdb)\\MSSQLLocalDB; Initial Catalog=StockContext")
-                .LogTo(Console.WriteLine, new[] { DbLoggerCategory.Database.Command.Name }, LogLevel.Information)
-                .EnableSensitiveDataLogging(); // This must be used only for debugging purposes since this method shows the parameters' values
+            optionsBuilder.UseSqlServer(_configuration.GetConnectionString("DefaultConnection"));
         }
-
+        
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            base.OnModelCreating(modelBuilder);
+
             modelBuilder.Entity<Message>()
                 .Property(m => m.Date)
                 .HasDefaultValueSql("getdate()");

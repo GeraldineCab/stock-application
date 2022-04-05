@@ -1,36 +1,50 @@
-﻿@model List<StockApplication.Dto.MessageDto>
+﻿@using Microsoft.AspNetCore.Identity
+@using StockApplication.Persistence.Entities
+@inject SignInManager<User> SignInManager
+
+@model List<StockApplication.Dto.MessageDto>
 @{
     ViewData["Title"] = "Stock Chatbot";
 }
 
 @if (!Model.Any())
 {
-    @Html.Partial("_NoMessagesPartial")
-    
-    @Html.Partial("_SendMessagePartial");
+    <partial name="_NoMessagesPartial" />
+    <partial name="_SendMessagePartial" />
 }
 else
 {
     @foreach (var message in Model)
     {
         <div class="row justify-content-center">
-            <div class="row col-10 justify-content-end mb-4">
-                <div class="col-8">
-                    <div class="bg-light rounded border-success p-2">
-                        <p>@message.Text</p>
-                        <small>@message.Date.Date</small>
+            @if (!message.User.IsBot && SignInManager.IsSignedIn(User))
+            {
+                <div class="row col-10 justify-content-end mb-4">
+                    <div class="col-8">
+                        <div class="bg-light rounded border-success p-2">
+                            <small><b>@User.Identity.Name</b></small>
+                            <p>@message.Text</p>
+                            <small>@message.Date</small>
+                        </div>
                     </div>
                 </div>
-            </div>
-            <div class="col-10 justify-content-start">
-                <div class="col-8">
-                    <div class="bg-info text-white rounded border-success">
-                        <p class="p-2">Ejemplo de bot</p>
+            }
+            else
+            {
+                <div class="col-10 justify-content-start mb-4">
+                    <div class="col-8">
+                        <div class="bg-info text-white rounded border-success p-2">
+                            <small><b>Bot</b></small>
+                            <p>@message.Text</p>
+                            <small>@message.Date</small>
+                        </div>
                     </div>
                 </div>
-            </div>
+            }
+
         </div>
     }
-        @Html.Partial("_SendMessagePartial")
+
+    <partial name="_SendMessagePartial" />
 }
 

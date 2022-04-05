@@ -1,11 +1,15 @@
+using System;
 using System.Net.Http;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using StockApplication.Business.Services.Interfaces;
 using StockApplication.Persistence;
+using StockApplication.Persistence.Entities;
 
 namespace StockApplication.Web
 {
@@ -21,8 +25,32 @@ namespace StockApplication.Web
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddControllersWithViews();
             ConfigureDependencies(services);
+
+            services.AddIdentity<User, IdentityRole>(options =>
+                    {
+                        options.SignIn.RequireConfirmedAccount = false;
+                    }
+                )
+                .AddEntityFrameworkStores<StockApplicationContext>();
+
+            services.ConfigureApplicationCookie(options =>
+            {
+                // Cookie settings
+                options.Cookie.HttpOnly = true;
+
+                options.ExpireTimeSpan = TimeSpan.FromMinutes(5);
+                options.LoginPath = "/Identity/Index";
+                options.LogoutPath = "/Identity/Index";
+                options.AccessDeniedPath = "/Identity/Account/AccessDenied";
+                options.SlidingExpiration = true;
+            });
+
+            services.Configure<PasswordHasherOptions>(options =>
+                options.CompatibilityMode = PasswordHasherCompatibilityMode.IdentityV2
+            );
+
+            services.AddControllersWithViews();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -43,6 +71,8 @@ namespace StockApplication.Web
 
             app.UseRouting();
 
+            app.UseAuthentication();
+
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
@@ -57,14 +87,17 @@ namespace StockApplication.Web
         {
             services.AddTransient<HttpClient>();
             services.AddAutoMapper(typeof(Startup));
+            services.AddDbContext<StockApplicationContext>(options =>
+            {
+                options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"));
+            });
 
             services.Scan(scan => scan
                 .FromAssemblies(typeof(IStockService).Assembly)
                 .AddClasses()
                 .AsMatchingInterface().WithTransientLifetime()
                 .FromAssemblies(typeof(IStockApplicationContext).Assembly)
-                .AddClasses()
-                .AsMatchingInterface().WithSingletonLifetime());
+                .AddClasses().AsMatchingInterface().WithSingletonLifetime());
         }
     }
 }

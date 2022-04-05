@@ -13,9 +13,16 @@ namespace StockApplication.Business.Extensions
         private static IMapper InitializeMapper()
         {
             var config = new MapperConfiguration(config =>
-                config.CreateMap<MessageDto, Message>()
-                    .ReverseMap());
-
+            {
+                config.CreateMap<UserDto, User>()
+                    .ForMember(dest => dest.Name,
+                        opt => opt.MapFrom(src => src.Name))
+                    .ForMember(dest => dest.IsBot,
+                        opt => opt.MapFrom(src => src.IsBot));
+                config.CreateMap<MessageDto, Message>().ReverseMap();
+            });
+           
+            config.AssertConfigurationIsValid();
             return config.CreateMapper();
         }
     }

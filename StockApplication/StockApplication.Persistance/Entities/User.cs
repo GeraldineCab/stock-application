@@ -1,11 +1,12 @@
 ﻿using System.Collections.Generic;
+using Microsoft.AspNetCore.Identity;
 
 namespace StockApplication.Persistence.Entities
 {
-    public class User
+    public class User : IdentityUser
     {
-        public int Id { get; set; }
         public string Name { get; set; }
+        public bool IsBot { get; set; } = false;
         public string Password { get; set; }
         public List<Message> Messages { get; set; }
     }

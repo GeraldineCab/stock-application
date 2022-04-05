@@ -3,13 +3,25 @@ using System.Threading;
 using System.Threading.Tasks;
 using Confluent.Kafka;
 using StockApplication.Business.Messaging.Interfaces;
+using StockApplication.Business.Services.Interfaces;
+using StockApplication.Business.ValidationServices.Interfaces;
 using StockApplication.Common.Messages;
+using StockApplication.Dto;
 
 namespace StockApplication.Business.Messaging
 {
     public class ProducerHandler : IProducerHandler
     {
-        public async Task ProduceMessageAsync(string stockCode, CancellationToken cancellationToken)
+        private readonly IMessageService _messageService;
+        private readonly IMessageValidationService _messageValidationService;
+        public ProducerHandler(IMessageService messageService, IMessageValidationService messageValidationService)
+        {
+            _messageService = messageService ?? throw new ArgumentNullException(nameof(messageService));
+            _messageValidationService = messageValidationService ?? throw new ArgumentNullException(nameof(messageValidationService));
+        }
+
+        /// <inheritdoc />
+        public async Task<bool> ProduceMessageAsync(string stockCode, CancellationToken cancellationToken, bool commandNeeded = false, bool isDecoupledCall = false)
         {
             var config = new ProducerConfig { BootstrapServers = "localhost:9092" };
 
@@ -17,14 +29,25 @@ namespace StockApplication.Business.Messaging
             {
                 try
                 {
+                    var (validationResult, _) = _messageValidationService.ValidateStockCode(stockCode);
+                    if (commandNeeded && !string.IsNullOrEmpty(validationResult.ErrorMessage))
+                    {
+                       return false;
+                    }
                     var dr = await p.ProduceAsync(KafkaTopics.GetStockInfo, new Message<Null, string> { Value = stockCode }, cancellationToken);
-                    Console.WriteLine($"Message with value '{dr.Value}' delivered to '{dr.TopicPartitionOffset}'");
+                    
+                    if (!isDecoupledCall)
+                    {
+                        var message = new MessageDto() { Text = stockCode, UserId = 1};
+                        await _messageService.AddMessageAsync(message, cancellationToken);
+                    }
                 }
                 catch (ProduceException<Null, string> e)
                 {
                     Console.WriteLine($"Delivery failed: {e.Error.Reason}");
                 }
             }
+            return true;
         }
     }
 }

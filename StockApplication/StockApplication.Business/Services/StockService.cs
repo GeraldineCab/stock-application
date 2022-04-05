@@ -4,40 +4,37 @@ using System.IO;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using AutoMapper;
 using CsvHelper;
 using StockApplication.Business.Services.Interfaces;
+using StockApplication.Business.ValidationServices.Interfaces;
 using StockApplication.Common.Constants;
 using StockApplication.Common.Messages;
 using StockApplication.Dto;
-using StockApplication.Persistence;
 
 namespace StockApplication.Business.Services
 {
     public class StockService : HttpClientHelper, IStockService
     {
-        private readonly IStockApplicationContext _context;
-        private readonly IMapper _mapper;
+        private readonly IMessageValidationService _messageValidationService;
 
-        public StockService(HttpClient httpClient, IStockApplicationContext context, IMapper mapper) : base(httpClient)
+        public StockService(HttpClient httpClient, IMessageValidationService messageValidationService) 
+            : base(httpClient)
         {
-            _context = context ?? throw new ArgumentNullException(nameof(context));
-            _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
+            _messageValidationService = messageValidationService ?? throw new ArgumentNullException(nameof(messageValidationService));
         }
 
         /// <inheritdoc />
         public async Task<StockDto> GetStockAsync(string stockCode, CancellationToken cancellationToken, bool commandNeeded = false)
         {
-            if (commandNeeded)
+            var(validationResult, stockCodeFormatted) = _messageValidationService.ValidateStockCode(stockCode);
+            
+            if (commandNeeded && !string.IsNullOrEmpty(validationResult.ErrorMessage))
             {
-                if (!stockCode.StartsWith(Commands.GetStock) || string.IsNullOrEmpty(stockCode))
-                {
-                    return null;
-                }
+                return null;
             }
 
             StockDto stock;
-            var uri = string.Format(ConnectionNames.StockApi, stockCode.Split('=')[1]);
+            var uri = string.Format(ConnectionNames.StockApi, stockCodeFormatted);
             var response = await GetStreamAsync(uri, cancellationToken);
 
             if (response == null)
@@ -58,15 +55,7 @@ namespace StockApplication.Business.Services
         /// <inheritdoc />
         public async Task<string> GetStockClosePriceAsync(string stockCode, CancellationToken cancellationToken, bool commandNeeded = false)
         {
-            if (commandNeeded)
-            {
-                if (!stockCode.StartsWith(Commands.GetStock) || string.IsNullOrEmpty(stockCode))
-                {
-                    return null;
-                }
-            }
-
-            var stock = await GetStockAsync(stockCode, cancellationToken);
+            var stock = await GetStockAsync(stockCode, cancellationToken, commandNeeded);
             return string.Format(StockMessages.ClosePriceMessage, stock.Symbol.ToUpper(), stock.Close);
         }
     }

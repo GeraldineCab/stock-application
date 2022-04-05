@@ -1,22 +1,21 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using StockApplication.Business.Messaging.Interfaces;
 using StockApplication.Business.Services.Interfaces;
 
 namespace StockApplication.Web.Controllers
 {
+    [Authorize]
     public class HomeController : Controller
     {
-        private readonly IProducerHandler _producerHandler;
-        private readonly IConsumerHandler _consumerHandler;
+        private readonly IHomeService _homeService;
         private readonly IMessageService _messageService;
 
-        public HomeController(IProducerHandler producerHandler, IConsumerHandler consumerHandler, IMessageService messageService)
+        public HomeController(IHomeService homeService, IMessageService messageService)
         {
-            _producerHandler = producerHandler ?? throw new ArgumentNullException(nameof(producerHandler));
-            _consumerHandler = consumerHandler ?? throw new ArgumentNullException(nameof(consumerHandler));
+            _homeService = homeService ?? throw new ArgumentNullException(nameof(homeService));
             _messageService = messageService ?? throw new ArgumentNullException(nameof(messageService));
         }
 
@@ -40,9 +39,8 @@ namespace StockApplication.Web.Controllers
         [Route("SendMessage")]
         public async Task<IActionResult> SendMessage(string stockCode, CancellationToken cancellationToken = default)
         {
-            await _producerHandler.ProduceMessageAsync(stockCode, cancellationToken);
-            var stockModel = await _consumerHandler.ConsumeMessageAsync(cancellationToken);
-            return View("Index", stockModel);
+            await _homeService.SendMessageAsync(stockCode, cancellationToken, true);
+            return RedirectToAction("Index");
         }
     }
 }

@@ -13,5 +13,13 @@ namespace StockApplication.Business.Services.Interfaces
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         Task<List<MessageDto>> GetMessagesAsync(CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Adds a message
+        /// </summary>
+        /// <param name="message"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        Task AddMessageAsync(MessageDto message, CancellationToken cancellationToken);
     }
 }

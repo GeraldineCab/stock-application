@@ -11,10 +11,12 @@ namespace StockApplication.Bot.Controllers
     public class StockBotController : ControllerBase
     {
         private readonly IConsumerHandler _consumerHandler;
+        private readonly IProducerHandler _producerHandler;
 
-        public StockBotController(IConsumerHandler consumerHandler)
+        public StockBotController(IConsumerHandler consumerHandler, IProducerHandler producerHandler)
         {
             _consumerHandler = consumerHandler ?? throw new ArgumentNullException(nameof(consumerHandler));
+            _producerHandler = producerHandler ?? throw new ArgumentNullException(nameof(producerHandler));
         }
 
         /// <summary>
@@ -26,7 +28,8 @@ namespace StockApplication.Bot.Controllers
         [HttpGet("{stockCode}")]
         public async Task<ActionResult> GetStockClosePriceAsync(string stockCode, CancellationToken cancellationToken = default)
         {
-            var response = await _consumerHandler.ConsumeMessageAsync(cancellationToken);
+            await _producerHandler.ProduceMessageAsync(stockCode, cancellationToken, isDecoupledCall: true);
+            var response = await _consumerHandler.ConsumeMessageAsync(cancellationToken, isDecoupledCall: true);
 
             if (string.IsNullOrEmpty(response))
             {

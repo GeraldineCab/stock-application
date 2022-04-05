@@ -5,18 +5,22 @@ using Confluent.Kafka;
 using StockApplication.Business.Messaging.Interfaces;
 using StockApplication.Business.Services.Interfaces;
 using StockApplication.Common.Messages;
+using StockApplication.Dto;
 
 namespace StockApplication.Business.Messaging
 {
     public class ConsumerHandler : IConsumerHandler
     {
         private readonly IStockService _stockService;
-        public ConsumerHandler(IStockService stockService)
+        private readonly IMessageService _messageService;
+
+        public ConsumerHandler(IStockService stockService, IMessageService messageService)
         {
             _stockService = stockService ?? throw new ArgumentNullException(nameof(stockService));
+            _messageService = messageService ?? throw new ArgumentNullException(nameof(messageService));
         }
 
-        public async Task<string> ConsumeMessageAsync(CancellationToken cancellationToken)
+        public async Task<string> ConsumeMessageAsync(CancellationToken cancellationToken, bool commandNeeded = false, bool isDecoupledCall = false)
         {
             var conf = new ConsumerConfig
             {
@@ -34,14 +38,22 @@ namespace StockApplication.Business.Messaging
                     try
                     {
                         var cr = c.Consume(cancellationToken);
-                        Console.WriteLine($"Consumed message '{cr.Message.Value}' at: '{cr.TopicPartitionOffset}'.");
-                        return await _stockService.GetStockClosePriceAsync(cr.Message.Value, commandNeeded: true, cancellationToken: cancellationToken);
+
+                        var stockMessage = await _stockService.GetStockClosePriceAsync(cr.Message.Value,
+                            commandNeeded: commandNeeded, cancellationToken: cancellationToken);
+
+                        if (!isDecoupledCall)
+                        {
+                            var message = new MessageDto() { Text = stockMessage, UserId = 2 };
+                            await _messageService.AddMessageAsync(message, cancellationToken);
+                        }
+
+                        return stockMessage;
                     }
                     catch (ConsumeException e)
                     {
-                        Console.WriteLine($"Error occurred: {e.Error.Reason}");
+                        Console.WriteLine(e.Message);
                     }
-
                 }
                 catch (OperationCanceledException)
                 {

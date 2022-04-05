@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
 using StockApplication.Business.Services.Interfaces;
+using StockApplication.Persistence;
 
 namespace StockApplication.Bot
 {
@@ -55,12 +56,15 @@ namespace StockApplication.Bot
         private void ConfigureDependencies(IServiceCollection services)
         {
             services.AddTransient<HttpClient>();
+            services.AddAutoMapper(typeof(Startup));
+            services.AddDbContext<StockApplicationContext>();
 
             services.Scan(scan => scan
                 .FromAssemblies(typeof(IStockService).Assembly)
                 .AddClasses()
-                .AsMatchingInterface()
-                .WithTransientLifetime());
+                .AsMatchingInterface().WithTransientLifetime()
+                .FromAssemblies(typeof(IStockApplicationContext).Assembly)
+                .AddClasses().AsMatchingInterface().WithSingletonLifetime());
         }
     }
 }

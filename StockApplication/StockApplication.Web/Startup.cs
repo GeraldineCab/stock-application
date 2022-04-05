@@ -5,6 +5,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using StockApplication.Business.Services.Interfaces;
+using StockApplication.Persistence;
 
 namespace StockApplication.Web
 {
@@ -55,12 +56,15 @@ namespace StockApplication.Web
         private void ConfigureDependencies(IServiceCollection services)
         {
             services.AddTransient<HttpClient>();
+            services.AddAutoMapper(typeof(Startup));
 
             services.Scan(scan => scan
                 .FromAssemblies(typeof(IStockService).Assembly)
                 .AddClasses()
-                .AsMatchingInterface()
-                .WithTransientLifetime());
+                .AsMatchingInterface().WithTransientLifetime()
+                .FromAssemblies(typeof(IStockApplicationContext).Assembly)
+                .AddClasses()
+                .AsMatchingInterface().WithSingletonLifetime());
         }
     }
 }

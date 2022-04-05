@@ -1,6 +1,6 @@
 ﻿namespace StockApplication.Dto
 {
-    public class Stock
+    public class StockDto
     {
         public string Symbol { get; set; }
         public string Date { get; set; }

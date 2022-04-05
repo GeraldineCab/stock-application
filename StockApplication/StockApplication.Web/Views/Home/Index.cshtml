@@ -1,21 +1,36 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+﻿@model List<StockApplication.Dto.MessageDto>
+@{
+    ViewData["Title"] = "Stock Chatbot";
 }
 
-<div class="row justify-content-center">
-    <div class="col-10 justify-content-end">
-        <div class="col-8">
-            <div class="bg-light rounded border-success">
-                <p class="p-2">Ejemplo</p>
+@if (!Model.Any())
+{
+    @Html.Partial("_NoMessagesPartial")
+    
+    @Html.Partial("_SendMessagePartial");
+}
+else
+{
+    @foreach (var message in Model)
+    {
+        <div class="row justify-content-center">
+            <div class="row col-10 justify-content-end mb-4">
+                <div class="col-8">
+                    <div class="bg-light rounded border-success p-2">
+                        <p>@message.Text</p>
+                        <small>@message.Date.Date</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-10 justify-content-start">
+                <div class="col-8">
+                    <div class="bg-info text-white rounded border-success">
+                        <p class="p-2">Ejemplo de bot</p>
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
-</div>
-<div class="row justify-content-center">
-    <div class="col-10">
-        <div class="input-group mb-3">
-            <input type="text" class="form-control" placeholder="Enter the stock code here" aria-label="Stock code" aria-describedby="button-addon2">
-            <button class="btn btn-outline-secondary" type="button" id="button-addon2">Send</button>
-        </div>
-    </div>
-</div>
+    }
+        @Html.Partial("_SendMessagePartial")
+}
+

@@ -20,6 +20,12 @@ namespace StockApplication.Business.Extensions
                     .ForMember(dest => dest.IsBot,
                         opt => opt.MapFrom(src => src.IsBot))
                     .ForAllMembers(m => m.Ignore());
+                config.CreateMap<User, UserDto>()
+                    .ForMember(dest => dest.Name,
+                        opt => opt.MapFrom(src => src.Name))
+                    .ForMember(dest => dest.IsBot,
+                        opt => opt.MapFrom(src => src.IsBot))
+                    .ForAllMembers(m => m.Ignore());
                 config.CreateMap<MessageDto, Message>().ReverseMap();
             });
            

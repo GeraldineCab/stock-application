@@ -31,11 +31,6 @@ namespace StockApplication.Business.Messaging
 
             using (var c = new ConsumerBuilder<Ignore, string>(conf).Build())
             {
-                var tp = new TopicPartition(KafkaTopics.GetStockInfo, Partition.Any);
-                c.Assign(tp);
-                var offset = c.Position(tp) - 1;
-                var top = new TopicPartitionOffset(tp, offset);
-                c.Seek(top);
                 c.Subscribe(KafkaTopics.GetStockInfo);
 
                 try

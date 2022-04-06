@@ -10,7 +10,7 @@ using StockApplication.Persistence;
 namespace StockApplication.Persistence.Migrations
 {
     [DbContext(typeof(StockApplicationContext))]
-    [Migration("20220406023321_InitialMigration")]
+    [Migration("20220406025235_InitialMigration")]
     partial class InitialMigration
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

@@ -2,10 +2,12 @@ using System;
 using System.Net.Http;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using StockApplication.Business.Services.Interfaces;
 using StockApplication.Persistence;
@@ -87,10 +89,8 @@ namespace StockApplication.Web
         {
             services.AddTransient<HttpClient>();
             services.AddAutoMapper(typeof(Startup));
-            services.AddDbContext<StockApplicationContext>(options =>
-            {
-                options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"));
-            });
+            services.TryAddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+            services.AddDbContext<StockApplicationContext>();
 
             services.Scan(scan => scan
                 .FromAssemblies(typeof(IStockService).Assembly)

@@ -10,7 +10,7 @@ namespace StockApplication.Business.Services.Interfaces
         /// <summary>
         /// Gets messages
         /// </summary>
-        /// <param name="cancellationToken"></param>
+        /// <param name="cancellationToken">Transaction cancellation token</param>
         /// <returns></returns>
         Task<List<MessageDto>> GetMessagesAsync(CancellationToken cancellationToken);
 
@@ -18,7 +18,7 @@ namespace StockApplication.Business.Services.Interfaces
         /// Adds a message
         /// </summary>
         /// <param name="message"></param>
-        /// <param name="cancellationToken"></param>
+        /// <param name="cancellationToken">Transaction cancellation token</param>
         /// <returns></returns>
         Task AddMessageAsync(MessageDto message, CancellationToken cancellationToken);
     }

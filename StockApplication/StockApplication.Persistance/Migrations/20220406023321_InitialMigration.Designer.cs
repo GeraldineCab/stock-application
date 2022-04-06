@@ -10,7 +10,7 @@ using StockApplication.Persistence;
 namespace StockApplication.Persistence.Migrations
 {
     [DbContext(typeof(StockApplicationContext))]
-    [Migration("20220405192518_InitialMigration")]
+    [Migration("20220406023321_InitialMigration")]
     partial class InitialMigration
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -167,15 +167,12 @@ namespace StockApplication.Persistence.Migrations
                     b.Property<string>("Text")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("UserId1")
+                    b.Property<string>("UserId")
                         .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("UserId1");
+                    b.HasIndex("UserId");
 
                     b.ToTable("Messages");
                 });
@@ -309,7 +306,7 @@ namespace StockApplication.Persistence.Migrations
                 {
                     b.HasOne("StockApplication.Persistence.Entities.User", "User")
                         .WithMany("Messages")
-                        .HasForeignKey("UserId1");
+                        .HasForeignKey("UserId");
 
                     b.Navigation("User");
                 });

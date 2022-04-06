@@ -27,20 +27,22 @@ namespace StockApplication.Web.Controllers
         [HttpPost]
         public async Task<IActionResult> PostAsync(LoginModel loginModel)
         {
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
-                var signedUser = await _userManager.FindByEmailAsync(loginModel.Email);
-                var canSignIn = await _signInManager.CheckPasswordSignInAsync(signedUser, signedUser.Password, false);
-                if (canSignIn.Succeeded)
-                {
-                    await _signInManager.SignInAsync(signedUser, false);
-                    return RedirectToAction("Index", "Home");
-                }
-       
-                ModelState.AddModelError(string.Empty, "Invalid login attempt.");
+               ModelState.AddModelError(string.Empty, "Invalid login attempt");
+               return View("Index");
+            }
+            var signedUser = await _userManager.FindByEmailAsync(loginModel.Email);
+            var canSignIn = await _signInManager.CanSignInAsync(signedUser);
+            if (canSignIn)
+            {
+                await _signInManager.SignInAsync(signedUser, false);
+                return RedirectToAction("Index", "Home");
+            }
+            else
+            {
                 return View("Index");
             }
-            return View("Index");
         }
 
         [HttpPost]

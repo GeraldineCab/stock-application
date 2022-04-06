@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
 using Confluent.Kafka;
+using Microsoft.AspNetCore.Http;
 using StockApplication.Business.Messaging.Interfaces;
 using StockApplication.Business.Services.Interfaces;
 using StockApplication.Business.ValidationServices.Interfaces;
@@ -14,10 +16,12 @@ namespace StockApplication.Business.Messaging
     {
         private readonly IMessageService _messageService;
         private readonly IMessageValidationService _messageValidationService;
-        public ProducerHandler(IMessageService messageService, IMessageValidationService messageValidationService)
+        private readonly IHttpContextAccessor _contextAccessor;
+        public ProducerHandler(IMessageService messageService, IMessageValidationService messageValidationService, IHttpContextAccessor contextAccessor)
         {
             _messageService = messageService ?? throw new ArgumentNullException(nameof(messageService));
             _messageValidationService = messageValidationService ?? throw new ArgumentNullException(nameof(messageValidationService));
+            _contextAccessor = contextAccessor ?? throw new ArgumentNullException(nameof(contextAccessor));
         }
 
         /// <inheritdoc />
@@ -38,7 +42,8 @@ namespace StockApplication.Business.Messaging
                     
                     if (!isDecoupledCall)
                     {
-                        var message = new MessageDto() { Text = stockCode, UserId = 1};
+                        var userId = _contextAccessor.HttpContext?.User.FindFirstValue(ClaimTypes.NameIdentifier);
+                        var message = new MessageDto() { Text = stockCode, UserId = userId};
                         await _messageService.AddMessageAsync(message, cancellationToken);
                     }
                 }

@@ -13,8 +13,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StockApplication.Common", "
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StockApplication.Bot", "StockApplication.Bot\StockApplication.Bot.csproj", "{BE415121-A908-4549-8F47-6DFC1A9AB549}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "StockApplication.Tests", "StockApplication.Tests", "{F04765B4-72D7-4A84-9C95-3929A7EB3355}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SolutionItems", "SolutionItems", "{DB5CD9B8-A812-4A81-B228-9E094C654CAB}"
 	ProjectSection(SolutionItems) = preProject
 		Directory.Build.targets = Directory.Build.targets

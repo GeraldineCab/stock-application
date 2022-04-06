@@ -26,11 +26,16 @@ namespace StockApplication.Business.Messaging
             {
                 GroupId = "consumer-group",
                 BootstrapServers = "localhost:9092",
-                AutoOffsetReset = AutoOffsetReset.Earliest
+                AutoOffsetReset = AutoOffsetReset.Latest
             };
 
             using (var c = new ConsumerBuilder<Ignore, string>(conf).Build())
             {
+                var tp = new TopicPartition(KafkaTopics.GetStockInfo, Partition.Any);
+                c.Assign(tp);
+                var offset = c.Position(tp) - 1;
+                var top = new TopicPartitionOffset(tp, offset);
+                c.Seek(top);
                 c.Subscribe(KafkaTopics.GetStockInfo);
 
                 try
@@ -44,7 +49,7 @@ namespace StockApplication.Business.Messaging
 
                         if (!isDecoupledCall)
                         {
-                            var message = new MessageDto() { Text = stockMessage, UserId = 2 };
+                            var message = new MessageDto() { Text = stockMessage, UserId = "3" };
                             await _messageService.AddMessageAsync(message, cancellationToken);
                         }
 

@@ -34,7 +34,8 @@ namespace StockApplication.Business.Services
             {
                 return messages.Select(m => mapper.Map<MessageDto>(m)).ToList();
             }
-            return null;
+
+            return new List<MessageDto>();
         }
 
 

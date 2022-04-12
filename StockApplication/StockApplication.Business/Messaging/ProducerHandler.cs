@@ -6,7 +6,6 @@ using Confluent.Kafka;
 using Microsoft.AspNetCore.Http;
 using StockApplication.Business.Messaging.Interfaces;
 using StockApplication.Business.Services.Interfaces;
-using StockApplication.Business.ValidationServices.Interfaces;
 using StockApplication.Common.Messages;
 using StockApplication.Dto;
 
@@ -15,17 +14,16 @@ namespace StockApplication.Business.Messaging
     public class ProducerHandler : IProducerHandler
     {
         private readonly IMessageService _messageService;
-        private readonly IMessageValidationService _messageValidationService;
         private readonly IHttpContextAccessor _contextAccessor;
-        public ProducerHandler(IMessageService messageService, IMessageValidationService messageValidationService, IHttpContextAccessor contextAccessor)
+
+        public ProducerHandler(IMessageService messageService, IHttpContextAccessor contextAccessor)
         {
             _messageService = messageService ?? throw new ArgumentNullException(nameof(messageService));
-            _messageValidationService = messageValidationService ?? throw new ArgumentNullException(nameof(messageValidationService));
             _contextAccessor = contextAccessor ?? throw new ArgumentNullException(nameof(contextAccessor));
         }
 
         /// <inheritdoc />
-        public async Task<bool> ProduceMessageAsync(string stockCode, CancellationToken cancellationToken, bool commandNeeded = false, bool isDecoupledCall = false)
+        public async Task ProduceMessageAsync(string message, CancellationToken cancellationToken, bool isDecoupledCall = false)
         {
             var config = new ProducerConfig { BootstrapServers = "localhost:9092" };
 
@@ -33,18 +31,12 @@ namespace StockApplication.Business.Messaging
             {
                 try
                 {
-                    var (validationResult, _) = _messageValidationService.ValidateStockCode(stockCode);
-                    if (commandNeeded && !string.IsNullOrEmpty(validationResult.ErrorMessage))
-                    {
-                       return false;
-                    }
-                    var dr = await p.ProduceAsync(KafkaTopics.GetStockInfo, new Message<Null, string> { Value = stockCode }, cancellationToken);
-                    
+                    await p.ProduceAsync(KafkaTopics.GetStockInfo, new Message<Null, string> { Value = message }, cancellationToken);
                     if (!isDecoupledCall)
                     {
                         var userId = _contextAccessor.HttpContext?.User.FindFirstValue(ClaimTypes.NameIdentifier);
-                        var message = new MessageDto() { Text = stockCode, UserId = userId};
-                        await _messageService.AddMessageAsync(message, cancellationToken);
+                        var messageDto = new MessageDto() { Text = message, UserId = userId};
+                        await _messageService.AddMessageAsync(messageDto, cancellationToken);
                     }
                 }
                 catch (ProduceException<Null, string> e)
@@ -52,7 +44,6 @@ namespace StockApplication.Business.Messaging
                     Console.WriteLine($"Delivery failed: {e.Error.Reason}");
                 }
             }
-            return true;
         }
     }
 }

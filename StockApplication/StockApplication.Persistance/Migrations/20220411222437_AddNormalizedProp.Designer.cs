@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using StockApplication.Persistence;
 
 namespace StockApplication.Persistence.Migrations
 {
     [DbContext(typeof(StockApplicationContext))]
-    partial class StockApplicationContextModelSnapshot : ModelSnapshot
+    [Migration("20220411222437_AddNormalizedProp")]
+    partial class AddNormalizedProp
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

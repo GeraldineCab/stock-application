@@ -2,6 +2,7 @@ using System.Net.Http;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -9,6 +10,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
 using StockApplication.Business.Services.Interfaces;
 using StockApplication.Persistence;
+using StockApplication.Persistence.Entities;
 
 namespace StockApplication.Bot
 {
@@ -24,13 +26,19 @@ namespace StockApplication.Bot
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            ConfigureDependencies(services);
+            services.AddIdentity<User, IdentityRole>(options =>
+                    {
+                        options.SignIn.RequireConfirmedAccount = false;
+                    }
+                )
+                .AddEntityFrameworkStores<StockApplicationContext>();
+
             services.AddControllers();
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "StockApplication.Bot", Version = "v1" });
             });
-
-            ConfigureDependencies(services);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

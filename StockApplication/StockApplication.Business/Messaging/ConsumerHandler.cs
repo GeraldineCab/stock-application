@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Confluent.Kafka;
 using StockApplication.Business.Messaging.Interfaces;
 using StockApplication.Business.Services.Interfaces;
+using StockApplication.Business.ValidationServices.Interfaces;
 using StockApplication.Common.Messages;
 using StockApplication.Dto;
 
@@ -13,14 +14,16 @@ namespace StockApplication.Business.Messaging
     {
         private readonly IStockService _stockService;
         private readonly IMessageService _messageService;
+        private readonly IMessageValidationService _messageValidationService;
 
-        public ConsumerHandler(IStockService stockService, IMessageService messageService)
+        public ConsumerHandler(IStockService stockService, IMessageService messageService, IMessageValidationService messageValidationService)
         {
             _stockService = stockService ?? throw new ArgumentNullException(nameof(stockService));
             _messageService = messageService ?? throw new ArgumentNullException(nameof(messageService));
+            _messageValidationService = messageValidationService ?? throw new ArgumentNullException(nameof(messageValidationService));
         }
 
-        public async Task<string> ConsumeMessageAsync(CancellationToken cancellationToken, bool commandNeeded = false, bool isDecoupledCall = false)
+        public async Task<string> ConsumeMessageAsync(CancellationToken cancellationToken, bool isDecoupledCall = false)
         {
             var conf = new ConsumerConfig
             {
@@ -32,23 +35,41 @@ namespace StockApplication.Business.Messaging
             using (var c = new ConsumerBuilder<Ignore, string>(conf).Build())
             {
                 c.Subscribe(KafkaTopics.GetStockInfo);
+                // Assigns to the last offset in the partition
+                var tp = new TopicPartition(KafkaTopics.GetStockInfo, new Partition(0));
+                var watermarkOffsets = c.GetWatermarkOffsets(tp);
+                var lastOffset = new Offset(watermarkOffsets.High - 1);
+                var tpo = new TopicPartitionOffset(tp, lastOffset);
+                c.Assign(tpo);
 
                 try
                 {
                     try
                     {
                         var cr = c.Consume(cancellationToken);
+                        c.Commit();
+                        var messageValue = cr.Message.Value;
+                        var stock = _messageValidationService.GetStockCommand(messageValue);
+                        string finalMessage;
 
-                        var stockMessage = await _stockService.GetStockClosePriceAsync(cr.Message.Value,
-                            commandNeeded: commandNeeded, cancellationToken: cancellationToken);
-
-                        if (!isDecoupledCall)
+                        if (isDecoupledCall)
                         {
-                            var message = new MessageDto() { Text = stockMessage, UserId = "3" };
+                            finalMessage = await _stockService.GetStockClosePriceAsync(messageValue, cancellationToken);
+                        }
+                        else
+                        {
+                            if (string.IsNullOrEmpty(stock))
+                            {
+                                finalMessage = messageValue;
+                            }
+                            else
+                            {
+                                finalMessage = await _stockService.GetStockClosePriceAsync(messageValue, cancellationToken);
+                            }
+                            var message = new MessageDto() { Text = finalMessage, UserId = "3" };
                             await _messageService.AddMessageAsync(message, cancellationToken);
                         }
-
-                        return stockMessage;
+                        return finalMessage;
                     }
                     catch (ConsumeException e)
                     {

@@ -24,17 +24,10 @@ namespace StockApplication.Business.Services
         }
 
         /// <inheritdoc />
-        public async Task<StockDto> GetStockAsync(string stockCode, CancellationToken cancellationToken, bool commandNeeded = false)
+        public async Task<StockDto> GetStockAsync(string stockCode, CancellationToken cancellationToken)
         {
-            var(validationResult, stockCodeFormatted) = _messageValidationService.ValidateStockCode(stockCode);
-            
-            if (commandNeeded && !string.IsNullOrEmpty(validationResult.ErrorMessage))
-            {
-                return null;
-            }
-
-            StockDto stock;
-            var uri = string.Format(ConnectionNames.StockApi, stockCodeFormatted);
+            StockDto stockDto;
+            var uri = string.Format(ConnectionNames.StockApi, stockCode);
             var response = await GetStreamAsync(uri, cancellationToken);
 
             if (response == null)
@@ -46,16 +39,16 @@ namespace StockApplication.Business.Services
             using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture))
             {
                 await csv.ReadAsync();
-                stock = csv.GetRecord<StockDto>();
+                stockDto = csv.GetRecord<StockDto>();
             };
             
-            return stock;
+            return stockDto;
         }
 
         /// <inheritdoc />
-        public async Task<string> GetStockClosePriceAsync(string stockCode, CancellationToken cancellationToken, bool commandNeeded = false)
+        public async Task<string> GetStockClosePriceAsync(string stockCode, CancellationToken cancellationToken)
         {
-            var stock = await GetStockAsync(stockCode, cancellationToken, commandNeeded);
+            var stock = await GetStockAsync(stockCode, cancellationToken);
             return string.Format(StockMessages.ClosePriceMessage, stock.Symbol.ToUpper(), stock.Close);
         }
     }

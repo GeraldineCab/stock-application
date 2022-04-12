@@ -1,23 +1,19 @@
-﻿using System.ComponentModel.DataAnnotations;
-using StockApplication.Business.ValidationServices.Interfaces;
-using StockApplication.Common.Messages;
+﻿using StockApplication.Business.ValidationServices.Interfaces;
+using StockApplication.Common.Utils;
 
 namespace StockApplication.Business.ValidationServices
 {
     public class MessageValidationService : IMessageValidationService
     {
         /// <inheritdoc />
-        public (ValidationResult, string) ValidateStockCode(string stockCode)
+        public string GetStockCommand(string message)
         {
-            var validationResult = new ValidationResult("");
-            if (!stockCode.StartsWith(Commands.GetStock) || string.IsNullOrEmpty(stockCode))
+            var (command, stock) = MessageUtils.GetStock(message);
+            if (!string.IsNullOrEmpty(command))
             {
-                validationResult.ErrorMessage = "Stock command was not sent or it is not valid";
-                return (validationResult, null);
+                return stock;
             }
-
-            var stockCodeFormatted = stockCode.Split('=')[1];
-            return (validationResult, stockCodeFormatted);
+            return string.Empty;
         }
     }
 }

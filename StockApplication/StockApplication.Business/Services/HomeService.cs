@@ -18,15 +18,10 @@ namespace StockApplication.Business.Services
         }
 
         /// <inheritdoc />
-        public async Task<bool> SendMessageAsync(string stockCode, CancellationToken cancellationToken, bool commandNeeded = false, bool isDecoupledCall = false)
+        public async Task SendMessageAsync(string stockCode, CancellationToken cancellationToken, bool isDecoupledCall = false)
         {
-            var canProduceMessage = await _producerHandler.ProduceMessageAsync(stockCode, cancellationToken, commandNeeded, isDecoupledCall);
-            if (canProduceMessage)
-            {
-                await _consumerHandler.ConsumeMessageAsync(cancellationToken, true);
-                return true;
-            }
-            return false;
+            await _producerHandler.ProduceMessageAsync(stockCode, cancellationToken, isDecoupledCall);
+            await _consumerHandler.ConsumeMessageAsync(cancellationToken, true);
         }
     }
 }

@@ -10,8 +10,8 @@ using StockApplication.Persistence;
 namespace StockApplication.Persistence.Migrations
 {
     [DbContext(typeof(StockApplicationContext))]
-    [Migration("20220406025235_InitialMigration")]
-    partial class InitialMigration
+    [Migration("20220411220222_DataSeeding")]
+    partial class DataSeeding
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -249,6 +249,53 @@ namespace StockApplication.Persistence.Migrations
                         .HasFilter("[NormalizedUserName] IS NOT NULL");
 
                     b.ToTable("AspNetUsers");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = "c83b0b7b-7729-42e5-b7cc-7ee823124f38",
+                            AccessFailedCount = 0,
+                            ConcurrencyStamp = "3dba2016-db48-4afd-8f56-c61ecb01bb1c",
+                            Email = "josh@mail.com",
+                            EmailConfirmed = true,
+                            IsBot = false,
+                            LockoutEnabled = false,
+                            Password = "J123osh",
+                            PhoneNumberConfirmed = true,
+                            SecurityStamp = "90f33f05-582e-4c8b-a85f-367a17d99a61",
+                            TwoFactorEnabled = false,
+                            UserName = "josh@mail.com"
+                        },
+                        new
+                        {
+                            Id = "27afc50e-1486-4479-bff0-797a11b98aac",
+                            AccessFailedCount = 0,
+                            ConcurrencyStamp = "a8371c83-22b6-49ee-a619-60bf12614245",
+                            Email = "mary@mail.com",
+                            EmailConfirmed = true,
+                            IsBot = false,
+                            LockoutEnabled = false,
+                            Password = "M123ary",
+                            PhoneNumberConfirmed = true,
+                            SecurityStamp = "bcc8d104-416c-4546-b721-f93a5694a4ad",
+                            TwoFactorEnabled = false,
+                            UserName = "mary@mail.com"
+                        },
+                        new
+                        {
+                            Id = "43f447fc-b688-45cc-a6d0-e649a8b176a9",
+                            AccessFailedCount = 0,
+                            ConcurrencyStamp = "39c62e48-1ce6-4cf6-a779-e2e0634b7c9d",
+                            Email = "bot@mail.com",
+                            EmailConfirmed = true,
+                            IsBot = false,
+                            LockoutEnabled = false,
+                            Password = "PasswordBot",
+                            PhoneNumberConfirmed = true,
+                            SecurityStamp = "1f317e91-311d-4a5b-917c-ac3331d9122b",
+                            TwoFactorEnabled = false,
+                            UserName = "Bot"
+                        });
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>

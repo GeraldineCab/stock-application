@@ -2,6 +2,6 @@
 {
     public static class Commands
     {
-        public static string GetStock = "/stock=";
+        public static string GetStock = "/stock";
     }
 }

@@ -32,6 +32,7 @@ namespace StockApplication.Web
             services.AddIdentity<User, IdentityRole>(options =>
                     {
                         options.SignIn.RequireConfirmedAccount = false;
+                        options.User.RequireUniqueEmail = true;
                     }
                 )
                 .AddEntityFrameworkStores<StockApplicationContext>();

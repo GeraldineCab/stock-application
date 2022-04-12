@@ -1,10 +1,8 @@
 ﻿using System;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using StockApplication.Business.Services.Interfaces;
 using StockApplication.Persistence.Entities;
 using StockApplication.Web.Models;
 
@@ -15,18 +13,15 @@ namespace StockApplication.Web.Controllers
     {
         private readonly UserManager<User> _userManager;
         private readonly SignInManager<User> _signInManager;
-        private readonly IUserService _userService;
 
-        public IdentityController(UserManager<User> userManager, SignInManager<User> signInManager, IUserService userService)
+        public IdentityController(UserManager<User> userManager, SignInManager<User> signInManager)
         {
             _userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
             _signInManager = signInManager ?? throw new ArgumentNullException(nameof(signInManager));
-            _userService = userService ?? throw new ArgumentNullException(nameof(userService));
         }
 
-        public IActionResult Index(CancellationToken cancellationToken = default)
+        public IActionResult Index()
         {
-            _userService.AddUsersAsync(cancellationToken);
             return View();
         }
 
@@ -38,6 +33,7 @@ namespace StockApplication.Web.Controllers
                ModelState.AddModelError(string.Empty, "Invalid login attempt");
                return View("Index");
             }
+            
             var signedUser = await _userManager.FindByEmailAsync(loginModel.Email);
             var canSignIn = await _signInManager.CanSignInAsync(signedUser);
             if (canSignIn)

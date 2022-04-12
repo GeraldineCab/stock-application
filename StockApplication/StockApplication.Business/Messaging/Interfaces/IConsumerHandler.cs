@@ -9,9 +9,8 @@ namespace StockApplication.Business.Messaging.Interfaces
         /// Consumes and handle message received
         /// </summary>
         /// <param name="cancellationToken">Transaction cancellation token</param>
-        /// <param name="commandNeeded"></param>
         /// <param name="isDecoupledCall"></param>
         /// <returns></returns>
-        Task<string> ConsumeMessageAsync(CancellationToken cancellationToken, bool commandNeeded = false, bool isDecoupledCall = false);
+        Task<string> ConsumeMessageAsync(CancellationToken cancellationToken, bool isDecoupledCall = false);
     }
 }

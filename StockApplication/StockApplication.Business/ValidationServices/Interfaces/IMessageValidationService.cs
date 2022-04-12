@@ -6,10 +6,10 @@ namespace StockApplication.Business.ValidationServices.Interfaces
     public interface IMessageValidationService
     {
         /// <summary>
-        /// Checks is the given stock code is valid
+        /// Gets the stock command
         /// </summary>
-        /// <param name="stockCode"></param>
+        /// <param name="message"></param>
         /// <returns></returns>
-        (ValidationResult,string) ValidateStockCode(string stockCode);
+        string GetStockCommand(string message);
     }
 }

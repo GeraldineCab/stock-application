@@ -39,7 +39,7 @@ namespace StockApplication.Web.Controllers
         [Route("SendMessage")]
         public async Task<IActionResult> SendMessage(string stockCode, CancellationToken cancellationToken = default)
         {
-            await _homeService.SendMessageAsync(stockCode, cancellationToken, true);
+            await _homeService.SendMessageAsync(stockCode, cancellationToken);
             return RedirectToAction("Index");
         }
     }

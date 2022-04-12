@@ -28,12 +28,12 @@ namespace StockApplication.Bot.Controllers
         [HttpGet("{stockCode}")]
         public async Task<ActionResult> GetStockClosePriceAsync(string stockCode, CancellationToken cancellationToken = default)
         {
-            await _producerHandler.ProduceMessageAsync(stockCode, cancellationToken, isDecoupledCall: true);
-            var response = await _consumerHandler.ConsumeMessageAsync(cancellationToken, isDecoupledCall: true);
+            await _producerHandler.ProduceMessageAsync(stockCode, cancellationToken, true);
+            var response = await _consumerHandler.ConsumeMessageAsync(cancellationToken, true);
 
             if (string.IsNullOrEmpty(response))
             {
-                return new NotFoundObjectResult("The bot is unable to provide stock information.");
+                return new NotFoundObjectResult("The bot is unable to provide stock information for the given message.");
             }
 
             return new OkObjectResult(response);

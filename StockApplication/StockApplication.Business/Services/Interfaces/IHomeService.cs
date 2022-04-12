@@ -10,9 +10,8 @@ namespace StockApplication.Business.Services.Interfaces
         /// </summary>
         /// <param name="stockCode"></param>
         /// <param name="cancellationToken">Transaction cancellation token</param>
-        /// <param name="commandNeeded"></param>
         /// <param name="isDecoupledCall"></param>
         /// <returns></returns>
-        Task<bool> SendMessageAsync(string stockCode, CancellationToken cancellationToken, bool commandNeeded = false, bool isDecoupledCall = false);
+        Task SendMessageAsync(string stockCode, CancellationToken cancellationToken, bool isDecoupledCall = false);
     }
 }

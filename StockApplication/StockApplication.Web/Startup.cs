@@ -1,9 +1,11 @@
 using System;
+using System.Linq;
 using System.Net.Http;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -12,6 +14,7 @@ using Microsoft.Extensions.Hosting;
 using StockApplication.Business.Services.Interfaces;
 using StockApplication.Persistence;
 using StockApplication.Persistence.Entities;
+using StockApplication.Web.Hubs;
 
 namespace StockApplication.Web
 {
@@ -27,6 +30,7 @@ namespace StockApplication.Web
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddSignalR();
             ConfigureDependencies(services);
 
             services.AddIdentity<User, IdentityRole>(options =>
@@ -59,6 +63,7 @@ namespace StockApplication.Web
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
+            app.UseResponseCompression();
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
@@ -83,6 +88,8 @@ namespace StockApplication.Web
                 endpoints.MapControllerRoute(
                     name: "default",
                     pattern: "{controller=Home}/{action=Index}/{id?}");
+
+                endpoints.MapHub<MessageHub>("/messageHub");
             });
         }
 

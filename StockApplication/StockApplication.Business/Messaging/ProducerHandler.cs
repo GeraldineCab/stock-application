@@ -1,29 +1,29 @@
 ﻿using System;
-using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
 using Confluent.Kafka;
-using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using StockApplication.Business.Messaging.Interfaces;
 using StockApplication.Business.Services.Interfaces;
 using StockApplication.Common.Messages;
 using StockApplication.Dto;
+using StockApplication.Persistence.Entities;
 
 namespace StockApplication.Business.Messaging
 {
     public class ProducerHandler : IProducerHandler
     {
         private readonly IMessageService _messageService;
-        private readonly IHttpContextAccessor _contextAccessor;
+        private readonly IUserService _userService;
 
-        public ProducerHandler(IMessageService messageService, IHttpContextAccessor contextAccessor)
+        public ProducerHandler(IMessageService messageService, IUserService userService)
         {
             _messageService = messageService ?? throw new ArgumentNullException(nameof(messageService));
-            _contextAccessor = contextAccessor ?? throw new ArgumentNullException(nameof(contextAccessor));
+            _userService = userService ?? throw new ArgumentNullException(nameof(userService));
         }
 
         /// <inheritdoc />
-        public async Task ProduceMessageAsync(string message, CancellationToken cancellationToken, bool isDecoupledCall = false)
+        public async Task<MessageDto> ProduceMessageAsync(string message, CancellationToken cancellationToken, bool isDecoupledCall = false)
         {
             var config = new ProducerConfig { BootstrapServers = "localhost:9092" };
 
@@ -34,14 +34,20 @@ namespace StockApplication.Business.Messaging
                     await p.ProduceAsync(KafkaTopics.GetStockInfo, new Message<Null, string> { Value = message }, cancellationToken);
                     if (!isDecoupledCall)
                     {
-                        var userId = _contextAccessor.HttpContext?.User.FindFirstValue(ClaimTypes.NameIdentifier);
-                        var messageDto = new MessageDto() { Text = message, UserId = userId};
-                        await _messageService.AddMessageAsync(messageDto, cancellationToken);
+                        var messageDto = new MessageDto()
+                        {
+                            Username = _userService.GetUsername(),
+                            Text = message, 
+                            Date = DateTime.Now
+                        };
+                        return messageDto;
                     }
+                    return new MessageDto();
                 }
                 catch (ProduceException<Null, string> e)
                 {
                     Console.WriteLine($"Delivery failed: {e.Error.Reason}");
+                    return new MessageDto();
                 }
             }
         }

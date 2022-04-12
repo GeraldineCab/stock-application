@@ -23,6 +23,7 @@ namespace StockApplication.Business.Messaging
             _messageValidationService = messageValidationService ?? throw new ArgumentNullException(nameof(messageValidationService));
         }
 
+        /// <inheritdoc />
         public async Task<string> ConsumeMessageAsync(CancellationToken cancellationToken, bool isDecoupledCall = false)
         {
             var conf = new ConsumerConfig
@@ -35,7 +36,7 @@ namespace StockApplication.Business.Messaging
             using (var c = new ConsumerBuilder<Ignore, string>(conf).Build())
             {
                 c.Subscribe(KafkaTopics.GetStockInfo);
-                // Assigns to the last offset in the partition
+                // Assigns the consumer to the last offset in the partition
                 var tp = new TopicPartition(KafkaTopics.GetStockInfo, new Partition(0));
                 var watermarkOffsets = c.GetWatermarkOffsets(tp);
                 var lastOffset = new Offset(watermarkOffsets.High - 1);
@@ -66,7 +67,7 @@ namespace StockApplication.Business.Messaging
                             {
                                 finalMessage = await _stockService.GetStockClosePriceAsync(messageValue, cancellationToken);
                             }
-                            var message = new MessageDto() { Text = finalMessage, UserId = "3" };
+                            var message = new MessageDto() { Text = finalMessage, Username = "Bot" };
                             await _messageService.AddMessageAsync(message, cancellationToken);
                         }
                         return finalMessage;

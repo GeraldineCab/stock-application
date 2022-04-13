@@ -3,6 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using StockApplication.Business.Messaging.Interfaces;
 using StockApplication.Business.Services.Interfaces;
+using StockApplication.Dto;
 
 namespace StockApplication.Business.Services
 {
@@ -18,10 +19,15 @@ namespace StockApplication.Business.Services
         }
 
         /// <inheritdoc />
-        public async Task SendMessageAsync(string stockCode, CancellationToken cancellationToken, bool isDecoupledCall = false)
+        public async Task<MessageDto> SendMessageAsync(string stockCode, CancellationToken cancellationToken, bool isDecoupledCall = false)
         {
-            await _producerHandler.ProduceMessageAsync(stockCode, cancellationToken, isDecoupledCall);
-            await _consumerHandler.ConsumeMessageAsync(cancellationToken, true);
+            var canProduceMessage = await _producerHandler.ProduceMessageAsync(stockCode, cancellationToken, isDecoupledCall);
+            if (canProduceMessage)
+            {
+                return await _consumerHandler.ConsumeMessageAsync(cancellationToken, true);
+            }
+
+            return new MessageDto();
         }
     }
 }

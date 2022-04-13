@@ -6,6 +6,6 @@ namespace StockApplication.Dto
     {
         public string Username { get; set; }
         public string Text { get; set; }
-        public DateTime Date { get; set; }
+        public DateTime Date { get; set; } = DateTime.Now;
     }
 }

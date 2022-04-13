@@ -11,14 +11,25 @@ var connection = new signalR.HubConnectionBuilder().withUrl("/messageHub").build
 //Disable send button until connection is established
 document.getElementById("sendButton").disabled = true;
 
-connection.on("ReceiveMessage", function (user, message) {
-    var div = document.createElement("div");
+connection.on("ReceiveMessage", function (user, message, date) {
+    var mainDiv = document.createElement("div");
     div.classList.add("col-10", "justify-content-start", "mb-4");
-    document.getElementById("messagesList").appendChild(li);
-    // We can assign user-supplied strings to an element's textContent because it
-    // is not interpreted as markup. If you're assigning in any other way, you 
-    // should be aware of possible script injection concerns.
-    li.textContent = `${user} says ${message}`;
+
+    var col = document.createElement("div");
+    div.classList.add("col-8");
+
+    var messageBox = document.createElement("div");
+    messageBox.classList.add("bg-light", "text-white", "rounded", "border-success", "p-2");
+
+    var messageText = document.createElement("p");
+
+    document.getElementById("messagesContainer")
+        .appendChild(mainDiv)
+        .appendChild(col)
+        .appendChild(messageBox)
+        .appendChild(messageText);
+
+    messageText.textContent = user + " says " + message + " at " + date;
 });
 
 connection.start().then(function () {
@@ -28,9 +39,8 @@ connection.start().then(function () {
 });
 
 document.getElementById("sendButton").addEventListener("click", function (event) {
-    var user = document.getElementById("userInput").value;
-    var message = document.getElementById("messageInput").value;
-    connection.invoke("SendMessage", user, message).catch(function (err) {
+    var message = document.getElementById("stockCode").value;
+    connection.invoke("SendMessageAsync", message).catch(function (err) {
         return console.error(err.toString());
     });
     event.preventDefault();

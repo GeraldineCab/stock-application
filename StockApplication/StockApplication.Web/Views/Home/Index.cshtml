@@ -1,51 +1,12 @@
-﻿@using Microsoft.AspNetCore.Identity
-@using StockApplication.Persistence.Entities
-@inject SignInManager<User> SignInManager
-
-@model List<StockApplication.Dto.MessageDto>
-@{
+﻿@{
     ViewData["Title"] = "Stock Chatbot";
 }
 
-@if (!Model.Any())
-{
-    <partial name="_NoMessagesPartial" />
-    <partial name="_SendMessagePartial" />
-}
-else
-{
-    @foreach (var message in Model)
-    {
-<div class="row justify-content-center">
-    @if (message.UserId == "3")
-    {
 
-        <div class="col-10 justify-content-start mb-4">
-            <div class="col-8">
-                <div class="bg-info text-white rounded border-success p-2">
-                    <small><b>Bot</b></small>
-                    <p>@message.Text</p>
-                    <small>@message.Date</small>
-                </div>
-            </div>
-        </div>
-    }
-    else
-    {
-        <div class="row col-10 justify-content-end mb-4">
-            <div class="col-8">
-                <div class="bg-light rounded border-success p-2">
-                    <small><b>@User.Identity.Name</b></small>
-                    <p>@message.Text</p>
-                    <small>@message.Date</small>
-                </div>
-            </div>
-        </div>
-    }
+<div class="row justify-content-center" id="messagesContainer">
 
 </div>
-    }
+  
+<partial name="_SendMessagePartial" />
 
-    <partial name="_SendMessagePartial" />
-}
 

@@ -12,6 +12,7 @@ namespace StockApplication.Business.Services
         {   
             _contextAccessor = contextAccessor ?? throw new ArgumentNullException(nameof(contextAccessor));
         }
+
         /// <inheritdoc />
         public string GetUsername()
         {

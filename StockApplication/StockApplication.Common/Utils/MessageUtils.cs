@@ -11,7 +11,7 @@ namespace StockApplication.Common.Utils
             {
                 return (stringArray[0], stringArray[1]);
             }
-            return (null, null);
+            return (null, stringArray[1]);
         }
     }
 }

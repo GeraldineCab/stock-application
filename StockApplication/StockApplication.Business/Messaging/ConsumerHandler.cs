@@ -13,18 +13,18 @@ namespace StockApplication.Business.Messaging
     public class ConsumerHandler : IConsumerHandler
     {
         private readonly IStockService _stockService;
-        private readonly IMessageService _messageService;
         private readonly IMessageValidationService _messageValidationService;
+        private readonly IUserService _userService;
 
-        public ConsumerHandler(IStockService stockService, IMessageService messageService, IMessageValidationService messageValidationService)
+        public ConsumerHandler(IStockService stockService, IMessageValidationService messageValidationService, IUserService userService)
         {
             _stockService = stockService ?? throw new ArgumentNullException(nameof(stockService));
-            _messageService = messageService ?? throw new ArgumentNullException(nameof(messageService));
             _messageValidationService = messageValidationService ?? throw new ArgumentNullException(nameof(messageValidationService));
+            _userService = userService ?? throw new ArgumentNullException(nameof(userService));
         }
 
         /// <inheritdoc />
-        public async Task<string> ConsumeMessageAsync(CancellationToken cancellationToken, bool isDecoupledCall = false)
+        public async Task<MessageDto> ConsumeMessageAsync(CancellationToken cancellationToken, bool isDecoupledCall = false)
         {
             var conf = new ConsumerConfig
             {
@@ -39,18 +39,24 @@ namespace StockApplication.Business.Messaging
                 // Assigns the consumer to the last offset in the partition
                 var tp = new TopicPartition(KafkaTopics.GetStockInfo, new Partition(0));
                 var watermarkOffsets = c.GetWatermarkOffsets(tp);
-                var lastOffset = new Offset(watermarkOffsets.High - 1);
-                var tpo = new TopicPartitionOffset(tp, lastOffset);
-                c.Assign(tpo);
+
+                if (watermarkOffsets.Low.Equals(Offset.Unset) || watermarkOffsets.High.Equals(Offset.Unset))
+                {
+                    c.Assign(tp);
+                }
+                else
+                {
+                    var lastOffset = new Offset(watermarkOffsets.High - 1);
+                    var tpo = new TopicPartitionOffset(tp, lastOffset);
+                    c.Assign(tpo);
+                }
 
                 try
                 {
                     try
                     {
                         var cr = c.Consume(cancellationToken);
-                        c.Commit();
                         var messageValue = cr.Message.Value;
-                        var stock = _messageValidationService.GetStockCommand(messageValue);
                         string finalMessage;
 
                         if (isDecoupledCall)
@@ -59,18 +65,18 @@ namespace StockApplication.Business.Messaging
                         }
                         else
                         {
+                            var stock = _messageValidationService.GetStockCommand(messageValue);
                             if (string.IsNullOrEmpty(stock))
                             {
                                 finalMessage = messageValue;
                             }
                             else
                             {
-                                finalMessage = await _stockService.GetStockClosePriceAsync(messageValue, cancellationToken);
+                                finalMessage = await _stockService.GetStockClosePriceAsync(stock, cancellationToken);
                             }
-                            var message = new MessageDto() { Text = finalMessage, Username = "Bot" };
-                            await _messageService.AddMessageAsync(message, cancellationToken);
+                            return new MessageDto() { Text = finalMessage, Username = "Bot" };
                         }
-                        return finalMessage;
+                        return new MessageDto() { Text = finalMessage, Username = _userService.GetUsername() };
                     }
                     catch (ConsumeException e)
                     {
@@ -82,8 +88,7 @@ namespace StockApplication.Business.Messaging
                     c.Close();
                 }
             }
-
-            return string.Empty;
+            return new MessageDto();
         }
     }
 }

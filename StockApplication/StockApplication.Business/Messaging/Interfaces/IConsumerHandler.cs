@@ -1,5 +1,6 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
+using StockApplication.Dto;
 
 namespace StockApplication.Business.Messaging.Interfaces
 {
@@ -11,6 +12,6 @@ namespace StockApplication.Business.Messaging.Interfaces
         /// <param name="cancellationToken">Transaction cancellation token</param>
         /// <param name="isDecoupledCall"></param>
         /// <returns></returns>
-        Task<string> ConsumeMessageAsync(CancellationToken cancellationToken, bool isDecoupledCall = false);
+        Task<MessageDto> ConsumeMessageAsync(CancellationToken cancellationToken, bool isDecoupledCall = false);
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR;
 using StockApplication.Business.Services.Interfaces;
@@ -15,8 +16,10 @@ namespace StockApplication.Web.Hubs
 
         public async Task SendMessageAsync(string message)
         {
-            var messageDto = await _homeService.SendMessageAsync(message, isDecoupledCall: false);
-            await Clients.All.SendAsync("ReceiveMessage", messageDto.Username, messageDto.Text, messageDto.Date);
+            var messages = await _homeService.SendMessageAsync(message, isDecoupledCall: false);
+
+            messages.Select(async m =>
+                await Clients.All.SendAsync("ReceiveMessage", m.Username, m.Text, m.Date.ToString("g")));
         }
     }
 }

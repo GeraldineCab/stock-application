@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Confluent.Kafka;
@@ -24,7 +25,7 @@ namespace StockApplication.Business.Messaging
         }
 
         /// <inheritdoc />
-        public async Task<MessageDto> ConsumeMessageAsync(CancellationToken cancellationToken, bool isDecoupledCall = false)
+        public async Task<IList<MessageDto>> ConsumeMessageAsync(CancellationToken cancellationToken, bool isDecoupledCall = false)
         {
             var conf = new ConsumerConfig
             {
@@ -38,7 +39,7 @@ namespace StockApplication.Business.Messaging
                 c.Subscribe(KafkaTopics.GetStockInfo);
                 // Assigns the consumer to the last offset in the partition
                 var tp = new TopicPartition(KafkaTopics.GetStockInfo, new Partition(0));
-                var watermarkOffsets = c.GetWatermarkOffsets(tp);
+                var watermarkOffsets = c.QueryWatermarkOffsets(tp, TimeSpan.FromMilliseconds(1000));
 
                 if (watermarkOffsets.Low.Equals(Offset.Unset) || watermarkOffsets.High.Equals(Offset.Unset))
                 {
@@ -57,6 +58,7 @@ namespace StockApplication.Business.Messaging
                     {
                         var cr = c.Consume(cancellationToken);
                         var messageValue = cr.Message.Value;
+                        var messages = new List<MessageDto>();
                         string finalMessage;
 
                         if (isDecoupledCall)
@@ -72,11 +74,14 @@ namespace StockApplication.Business.Messaging
                             }
                             else
                             {
-                                finalMessage = await _stockService.GetStockClosePriceAsync(stock, cancellationToken);
-                                return new MessageDto() { Text = finalMessage, Username = "Bot" };
+                                var stockMessage = await _stockService.GetStockClosePriceAsync(stock, cancellationToken);
+                                messages.Add(new MessageDto() { Text = messageValue, Username = _userService.GetUsername() });
+                                messages.Add(new MessageDto() { Text = stockMessage, Username = "Bot" });
+                                return messages;
                             }
                         }
-                        return new MessageDto() { Text = finalMessage, Username = _userService.GetUsername() };
+                        messages.Add(new MessageDto() { Text = finalMessage, Username = _userService.GetUsername() });
+                        return messages;
                     }
                     catch (ConsumeException e)
                     {
@@ -88,7 +93,7 @@ namespace StockApplication.Business.Messaging
                     c.Close();
                 }
             }
-            return new MessageDto();
+            return new List<MessageDto>();
         }
     }
 }

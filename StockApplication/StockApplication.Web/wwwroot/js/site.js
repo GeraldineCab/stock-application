@@ -1,38 +1,44 @@
 ﻿"use strict";
 
+// Creates connection
 const connection = new signalR.HubConnectionBuilder()
     .withUrl("/messageHub")
-    .configureLogging(signalR.LogLevel.Information)
     .build();
 
-document.getElementById("sendButton").classList.add("disabled");
+var sendButton = document.getElementById("sendButton");
+var textInput = document.getElementById("stockCode");
+sendButton.classList.add("disabled");
 
+// Starts connection and disable send button until the connection is established
 async function start() {
     try {
         await connection.start();
         console.assert(connection.state === signalR.HubConnectionState.Connected);
-        console.log("SignalR Connected.");
-        document.getElementById("sendButton").classList.remove("disabled");
+        sendButton.classList.remove("disabled");
     } catch (err) {
         console.log(err);
         setTimeout(start, 5000);
     }
 };
 
+// Takes value from text input and calls the hub method
 document.getElementById("sendButton").addEventListener("click", function (event) {
-    var msg = document.getElementById("stockCode").value;
+    var msg = textInput.value;
     sendMessage(msg);
     event.preventDefault();
 });
 
+// Calls the hub method with the message that was previously taken
 async function sendMessage(msg) {
     try {
         await connection.invoke("SendMessageAsync", msg);
+        textInput.value = "";
     } catch (err) {
         console.error(err);
     }
 }
 
+// Handles the UI behavior when receiving data from hub
 connection.on("ReceiveMessage", function (user, message, date) {
     var mainDiv = document.createElement("div");
     mainDiv.classList.add("col-10", "justify-content-start", "mb-4");
@@ -54,5 +60,5 @@ connection.onclose(async () => {
     await start();
 });
 
-// Start the connection
+// Starts the connection
 start();

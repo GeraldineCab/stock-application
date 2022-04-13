@@ -27,23 +27,21 @@ namespace StockApplication.Persistence
                 .HasData(
                     new User()
                     {
-                        UserName = "josh@mail.com",
+                        NormalizedUserName = "Josh",
                         Email = "josh@mail.com",
                         NormalizedEmail = "josh@mail.com",
                         PhoneNumberConfirmed = true,
                         EmailConfirmed = true,
-                        Password = "J123osh",
-                        IsBot = false
+                        Password = "J123osh"
                     },
                     new User()
                     {
-                        UserName = "mary@mail.com",
+                        NormalizedUserName = "Mary",
                         Email = "mary@mail.com",
                         NormalizedEmail = "mary@mail.com",
                         PhoneNumberConfirmed = true,
                         EmailConfirmed = true,
-                        Password = "M123ary",
-                        IsBot = false
+                        Password = "M123ary"
                     });
         }
     }

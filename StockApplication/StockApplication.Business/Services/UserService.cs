@@ -16,7 +16,7 @@ namespace StockApplication.Business.Services
         /// <inheritdoc />
         public string GetUsername()
         {
-            return  _contextAccessor.HttpContext?.User.FindFirstValue(ClaimTypes.Name);
+            return _contextAccessor.HttpContext?.User.FindFirstValue(ClaimTypes.Name);
         }
     }
 }

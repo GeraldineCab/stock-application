@@ -66,7 +66,6 @@ namespace StockApplication.Bot
         private void ConfigureDependencies(IServiceCollection services)
         {
             services.AddTransient<HttpClient>();
-            services.AddAutoMapper(typeof(Startup));
             services.TryAddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             services.AddDbContext<StockApplicationContext>();
 

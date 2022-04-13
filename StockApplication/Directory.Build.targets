@@ -5,14 +5,28 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Confluent.Kafka" Version="1.8.2" />
-		<PackageReference Include="CsvHelper" Version="27.2.1" />
-		<PackageReference Include="Microsoft.AspNetCore.Identity" Version="2.2.0" />
-		<PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="5.0.0" />
-		<PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="5.0.0" />
-		<PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="5.0.0" />
-		<PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="5.0.0" />
-		<PackageReference Include="Scrutor" Version="4.1.0" />
-		<PackageReference Include="Swashbuckle.AspNetCore" Version="5.6.3" />
+		<PackageReference Update="Confluent.Kafka" Version="1.8.2" />
+		<PackageReference Update="CsvHelper" Version="27.2.1" />
+		<PackageReference Update="Microsoft.AspNetCore.Identity" Version="2.2.0" />
+		<PackageReference Update="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="5.0.0" />
+		<PackageReference Update="Microsoft.AspNetCore.SignalR.Client" Version="5.0.0" />
+		<PackageReference Update="Microsoft.EntityFrameworkCore.SqlServer" Version="5.0.0" />
+		<PackageReference Update="Microsoft.EntityFrameworkCore.Tools" Version="5.0.0" />
+		<PackageReference Update="Scrutor" Version="4.1.0" />
+		<PackageReference Update="Swashbuckle.AspNetCore" Version="5.6.3" />
 	</ItemGroup>
+
+	<Choose>
+		<When Condition="$(MSBuildProjectDirectory.Contains('Test'))">
+			<PropertyGroup>
+				<IsTestProject>True</IsTestProject>
+			</PropertyGroup>
+			<ItemGroup>
+				<PackageReference Include="JustMock" Version="2022.1.223.1" />
+				<PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.1.0" />
+				<PackageReference Include="NUnit" Version="3.13.3" />
+				<PackageReference Include="NUnit3TestAdapter" Version="4.2.1" />
+			</ItemGroup>
+		</When>
+	</Choose>
 </Project>

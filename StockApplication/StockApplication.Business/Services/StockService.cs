@@ -1,12 +1,10 @@
-﻿using System;
-using System.Globalization;
+﻿using System.Globalization;
 using System.IO;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using CsvHelper;
 using StockApplication.Business.Services.Interfaces;
-using StockApplication.Business.ValidationServices.Interfaces;
 using StockApplication.Common.Constants;
 using StockApplication.Common.Messages;
 using StockApplication.Dto;
@@ -15,13 +13,8 @@ namespace StockApplication.Business.Services
 {
     public class StockService : HttpClientHelper, IStockService
     {
-        private readonly IMessageValidationService _messageValidationService;
-
-        public StockService(HttpClient httpClient, IMessageValidationService messageValidationService) 
-            : base(httpClient)
-        {
-            _messageValidationService = messageValidationService ?? throw new ArgumentNullException(nameof(messageValidationService));
-        }
+        public StockService(HttpClient httpClient) 
+            : base(httpClient) { }
 
         /// <inheritdoc />
         public async Task<StockDto> GetStockAsync(string stockCode, CancellationToken cancellationToken)
@@ -29,12 +22,13 @@ namespace StockApplication.Business.Services
             StockDto stockDto;
             var uri = string.Format(ConnectionNames.StockApi, stockCode);
             var response = await GetStreamAsync(uri, cancellationToken);
+            var responseIsInvalid = (await GetStringAsync(uri, cancellationToken)).Contains("N/D");
 
-            if (response == null)
+            if (responseIsInvalid)
             {
                 return null;
             }
-
+            
             using var reader = new StreamReader(response);
             using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture))
             {
@@ -49,7 +43,7 @@ namespace StockApplication.Business.Services
         public async Task<string> GetStockClosePriceAsync(string stockCode, CancellationToken cancellationToken)
         {
             var stock = await GetStockAsync(stockCode, cancellationToken);
-            return string.Format(StockMessages.ClosePriceMessage, stock.Symbol.ToUpper(), stock.Close);
+            return stock != null ? string.Format(StockMessages.ClosePriceMessage, stock.Symbol.ToUpper(), stock.Close) : null;
         }
     }
 }

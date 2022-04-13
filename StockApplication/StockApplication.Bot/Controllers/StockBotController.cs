@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
@@ -29,12 +28,11 @@ namespace StockApplication.Bot.Controllers
         {
             var response = await _homeService.SendMessageAsync(stockCode, cancellationToken, true);
 
-            if (string.IsNullOrEmpty(response.FirstOrDefault()?.Text))
+            if (string.IsNullOrEmpty(response.Text))
             {
                 return new BadRequestObjectResult("The bot is unable to provide stock information for the given message.");
             }
-
-            return new OkObjectResult(response.FirstOrDefault()?.Text);
+            return new OkObjectResult(response.Text);
         }
     }
 }

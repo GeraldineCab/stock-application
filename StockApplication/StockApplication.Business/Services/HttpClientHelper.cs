@@ -21,5 +21,11 @@ namespace StockApplication.Business.Services
         {
             return _httpClient.GetStreamAsync(uri, cancellationToken);
         }
+
+        /// <inheritdoc />
+        public Task<string> GetStringAsync(string uri, CancellationToken cancellationToken)
+        {
+            return _httpClient.GetStringAsync(uri, cancellationToken);
+        }
     }
 }

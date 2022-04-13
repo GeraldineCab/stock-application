@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Confluent.Kafka;
@@ -25,7 +24,7 @@ namespace StockApplication.Business.Messaging
         }
 
         /// <inheritdoc />
-        public async Task<IList<MessageDto>> ConsumeMessageAsync(CancellationToken cancellationToken, bool isDecoupledCall = false)
+        public async Task<MessageDto> ConsumeMessageAsync(CancellationToken cancellationToken, bool isDecoupledCall = false)
         {
             var conf = new ConsumerConfig
             {
@@ -58,7 +57,6 @@ namespace StockApplication.Business.Messaging
                     {
                         var cr = c.Consume(cancellationToken);
                         var messageValue = cr.Message.Value;
-                        var messages = new List<MessageDto>();
                         string finalMessage;
 
                         if (isDecoupledCall)
@@ -74,14 +72,11 @@ namespace StockApplication.Business.Messaging
                             }
                             else
                             {
-                                var stockMessage = await _stockService.GetStockClosePriceAsync(stock, cancellationToken);
-                                messages.Add(new MessageDto() { Text = messageValue, Username = _userService.GetUsername() });
-                                messages.Add(new MessageDto() { Text = stockMessage, Username = "Bot" });
-                                return messages;
+                                finalMessage = await _stockService.GetStockClosePriceAsync(stock, cancellationToken);
+                                return new MessageDto() { Text = finalMessage, Username = "Bot" }; ;
                             }
                         }
-                        messages.Add(new MessageDto() { Text = finalMessage, Username = _userService.GetUsername() });
-                        return messages;
+                        return new MessageDto() { Text = finalMessage, Username = _userService.GetUsername() };
                     }
                     catch (ConsumeException e)
                     {
@@ -93,7 +88,7 @@ namespace StockApplication.Business.Messaging
                     c.Close();
                 }
             }
-            return new List<MessageDto>();
+            return new MessageDto();
         }
     }
 }

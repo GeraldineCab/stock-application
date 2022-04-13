@@ -14,8 +14,6 @@ namespace StockApplication.Persistence
             _configuration = configuration;
         }
 
-        public DbSet<Message> Messages { get; set; }
-
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             optionsBuilder.UseSqlServer(_configuration.GetConnectionString("DefaultConnection"));
@@ -46,19 +44,7 @@ namespace StockApplication.Persistence
                         EmailConfirmed = true,
                         Password = "M123ary",
                         IsBot = false
-                    },
-                    new User()
-                    {
-                        UserName = "Bot",
-                        Email = "bot@mail.com",
-                        PhoneNumberConfirmed = true,
-                        EmailConfirmed = true,
-                        Password = "PasswordBot"
                     });
-
-           modelBuilder.Entity<Message>()
-               .Property(m => m.Date)
-               .HasDefaultValueSql("getdate()");
         }
     }
 }

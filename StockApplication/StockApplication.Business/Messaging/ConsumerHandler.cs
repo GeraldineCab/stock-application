@@ -73,8 +73,8 @@ namespace StockApplication.Business.Messaging
                             else
                             {
                                 finalMessage = await _stockService.GetStockClosePriceAsync(stock, cancellationToken);
+                                return new MessageDto() { Text = finalMessage, Username = "Bot" };
                             }
-                            return new MessageDto() { Text = finalMessage, Username = "Bot" };
                         }
                         return new MessageDto() { Text = finalMessage, Username = _userService.GetUsername() };
                     }

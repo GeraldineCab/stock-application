@@ -1,47 +1,58 @@
-﻿// Please see documentation at https://docs.microsoft.com/aspnet/core/client-side/bundling-and-minification
-// for details on configuring this project to bundle and minify static web assets.
+﻿"use strict";
 
-// Write your JavaScript code.
+const connection = new signalR.HubConnectionBuilder()
+    .withUrl("/messageHub")
+    .configureLogging(signalR.LogLevel.Information)
+    .build();
 
+document.getElementById("sendButton").classList.add("disabled");
 
-"use strict";
+async function start() {
+    try {
+        await connection.start();
+        console.assert(connection.state === signalR.HubConnectionState.Connected);
+        console.log("SignalR Connected.");
+        document.getElementById("sendButton").classList.remove("disabled");
+    } catch (err) {
+        console.log(err);
+        setTimeout(start, 5000);
+    }
+};
 
-var connection = new signalR.HubConnectionBuilder().withUrl("/messageHub").build();
+document.getElementById("sendButton").addEventListener("click", function (event) {
+    var msg = document.getElementById("stockCode").value;
+    sendMessage(msg);
+    event.preventDefault();
+});
 
-//Disable send button until connection is established
-document.getElementById("sendButton").disabled = true;
+async function sendMessage(msg) {
+    try {
+        await connection.invoke("SendMessageAsync", msg);
+    } catch (err) {
+        console.error(err);
+    }
+}
 
 connection.on("ReceiveMessage", function (user, message, date) {
     var mainDiv = document.createElement("div");
-    div.classList.add("col-10", "justify-content-start", "mb-4");
-
-    var col = document.createElement("div");
-    div.classList.add("col-8");
+    mainDiv.classList.add("col-10", "justify-content-start", "mb-4");
 
     var messageBox = document.createElement("div");
-    messageBox.classList.add("bg-light", "text-white", "rounded", "border-success", "p-2");
+    messageBox.classList.add("bg-info", "text-white", "rounded", "border-success", "p-2");
 
     var messageText = document.createElement("p");
 
     document.getElementById("messagesContainer")
         .appendChild(mainDiv)
-        .appendChild(col)
         .appendChild(messageBox)
         .appendChild(messageText);
 
     messageText.textContent = user + " says " + message + " at " + date;
 });
 
-connection.start().then(function () {
-    document.getElementById("sendButton").disabled = false;
-}).catch(function (err) {
-    return console.error(err.toString());
+connection.onclose(async () => {
+    await start();
 });
 
-document.getElementById("sendButton").addEventListener("click", function (event) {
-    var message = document.getElementById("stockCode").value;
-    connection.invoke("SendMessageAsync", message).catch(function (err) {
-        return console.error(err.toString());
-    });
-    event.preventDefault();
-});
+// Start the connection
+start();
